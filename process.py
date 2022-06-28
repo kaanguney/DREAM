@@ -98,12 +98,13 @@ if processing_mode == 'raw':
 
 # execute 'onehot' snippet, @vinnik-dmitry07
 else:
-  x = np.empty((TOTAL_SEQS, MAX_SEQ_LEN * 4), np.float16)
-  y = np.empty(TOTAL_SEQS, np.float16)
-
+  cutoff = int(TOTAL_SEQS // (100 / memory_mode))
+  x = np.empty((cutoff, MAX_SEQ_LEN * 4), np.float16)
+  y = np.empty(cutoff, np.float16)
+  
   with open('data/train_sequences.txt', 'r') as f:
       for i, line in enumerate(tqdm(f.readlines())):
-        if not (TOTAL_SEQS // (100 / memory_mode)) == i:
+        if not i == cutoff:
           seq, expr = line.split('\t')
           seq = remove_suffix(remove_prefix(seq, PREFIX), SUFFIX)
           nuc_idx = np.array([nuc_map[s] for s in seq], dtype=int)

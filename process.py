@@ -25,13 +25,13 @@ if processing_mode == 'onehot':
     if memory_mode in MEMORY_MODES: break
     else: print("Valid memory modes are 5, 10 or 15.")
 
-# helper function for proessing mode 'onehot'
+# helper function for processing mode 'onehot'
 def remove_prefix(text: str, prefix: str) -> str:
     if text.startswith(prefix):
         return text[len(prefix):]
     raise ValueError(prefix)
 
-# helper function for proessing mode 'onehot'
+# helper function for processing mode 'onehot'
 def remove_suffix(text: str, suffix: str) -> str:
     if text.endswith(suffix):
         return text[len(suffix):]

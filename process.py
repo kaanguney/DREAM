@@ -1,3 +1,4 @@
+import sys
 import os
 import pandas as pd
 import shutil
@@ -6,11 +7,23 @@ from more_itertools import sliced
 from tqdm import tqdm
 
 # select processing mode
-MODES = ['raw', 'onehot']
+PROCESSING_MODES = ['raw', 'onehot']
 while True:
-  mode = input('Please enter the processing mode: ')
-  if mode in MODES: break
+  processing_mode = input('Please enter the processing mode: ')
+  if processing_mode in PROCESSING_MODES: break
   else: print("Valid processing modes are 'raw' or 'onehot'.")
+
+# if processing mode 'onehot', export subset with .npz extension
+MEMORY_MODES = [5, 10, 15]
+if processing_mode == 'onehot':
+  while True:
+    try:
+      memory_mode = int(input('Please enter the percentage of allocated memory: '))
+    except ValueError:
+      print("Valid memory modes are 5, 10 or 15.")
+      continue
+    if memory_mode in MEMORY_MODES: break
+    else: print("Valid memory modes are 5, 10 or 15.")
 
 # helper function for proessing mode 'onehot'
 def remove_prefix(text: str, prefix: str) -> str:
@@ -47,7 +60,7 @@ def load(filename, path):
         sequences = [[sequence_list[0], sequence_list[1].replace('\n', '')] for sequence_list in sequences]
     return np.array(sequences)
 
-if mode == 'raw':
+if processing_mode == 'raw':
   # specify path to data
   PATH = os.getcwd()
   path = os.path.join(PATH, 'data')
@@ -80,6 +93,8 @@ if mode == 'raw':
 
   # no need to batch testing
   testing.to_csv(os.path.join(os.getcwd(), 'testing', 'test.csv'), index=False)
+  print('Processing, done.')
+  sys.exit()
 
 # execute 'onehot' snippet, @vinnik-dmitry07
 else:
@@ -88,6 +103,7 @@ else:
 
   with open('data/train_sequences.txt', 'r') as f:
       for i, line in enumerate(tqdm(f.readlines())):
+        if not (TOTAL_SEQS // (100 / memory_mode)) == i:
           seq, expr = line.split('\t')
           seq = remove_suffix(remove_prefix(seq, PREFIX), SUFFIX)
           nuc_idx = np.array([nuc_map[s] for s in seq], dtype=int)
@@ -97,5 +113,7 @@ else:
           one_hot[pos_idx, nuc_idx] = 1 / MAX_SEQ_LEN
           x[i] = one_hot.ravel()
           y[i] = float(expr)
-  # save
-  np.savez('data/onehot', x=x, y=y)
+        else:
+          np.savez('data/onehot', x=x, y=y)
+          print('Processing, done.')
+          sys.exit()

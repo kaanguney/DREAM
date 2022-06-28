@@ -41,10 +41,10 @@ def kmerize(filename="./data/train_sequences.txt", stride=1, size=4):
     Generate kmers for specified subset of sequences.
     :param:
            str filename: file with sequences.
-           str savepath: directory to export kmers.
            int stride: slide of the window for kmer generation.
            int size: size of the kmer.
     :return:
+            pd.DataFrame: Pandas object with row pair as sequence and the corresponding kmer.
     """
     sequences = []
     kmers = []
@@ -68,18 +68,17 @@ def kmerize(filename="./data/train_sequences.txt", stride=1, size=4):
     database = pd.DataFrame({'sequence': sequences, "kmers": kmers})
     return database
 
-def tokenize(database):
+def tokenize():
     """
     Calculate frequency for each kmer given sequence.
     :param:
+           None
     :return:
-           
+            pd.DataFrame: Pandas object consisting of kmer frequencies indexed by sequences.
     """
+    database = kmerize()
     vectorizer = CountVectorizer()
     vectorizer.fit(database["kmers"])
     data = vectorizer.transform(database["kmers"])
     vectors = pd.DataFrame(data.toarray(), database["sequence"].values, vectorizer.get_feature_names())
     return vectors
-
-# call to feature vectors
-features = tokenize(kmerize())

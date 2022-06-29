@@ -68,15 +68,15 @@ def kmerize(filename="./data/train_sequences.txt", stride=1, size=4):
     database = pd.DataFrame({'sequence': sequences, "kmers": kmers})
     return database
 
-def tokenize():
+def tokenize(size):
     """
     Calculate frequency for each kmer given sequence.
     :param:
-           None
+           int size: length of each kmer.
     :return:
             pd.DataFrame: Pandas object consisting of kmer frequencies indexed by sequences.
     """
-    database = kmerize()
+    database = kmerize(size=size)
     vectorizer = CountVectorizer()
     vectorizer.fit(database["kmers"])
     data = vectorizer.transform(database["kmers"])

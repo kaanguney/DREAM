@@ -56,13 +56,14 @@ def kmerize(filename="./data/train_sequences.txt", stride=1, size=4):
                 break
             seq, expr = line.split('\t')
             exprs.append(float(expr.replace("\n", "")))
+            # keep original sequence 
+            sequences.append(seq)
             seq = remove_suffix(remove_prefix(seq, PREFIX), SUFFIX)
             try:
                 # suboptimal solution to padding
                 # consider alternative(s)
                 kmer = [seq[i:(i+size)] for i in range(0, stride, len(seq)) if len(seq[i:(i+size)]) == size and len(seq) == 80]
                 kmer = ",".join(kmer)
-                sequences.append(seq)
                 kmers.append(kmer)
             except IndexError:
                 pass

@@ -33,6 +33,11 @@ SUFFIX = 'GGTTACGGCTGTT'
 MAX_SEQ_LEN = 142 - len(PREFIX) - len(SUFFIX)  # 112
 nuc_map = {k: i for i, k in enumerate(['A', 'C', 'T', 'G', 'N'])}
 
+# check if submission
+response = input("Intend to submit? If so, type 'yes'. If not, type 'no': ")
+if response == 'yes': is_submission = True
+else: is_submission = False
+
 # replace cutoff with commented statement on GPU
 cutoff = 1000
 # cutoff = int(TOTAL_SEQS // (100 / memory_mode))
@@ -60,9 +65,7 @@ def kmerize(filename="./data/train_sequences.txt", stride=1, size=4):
             sequences.append(seq)
             seq = remove_suffix(remove_prefix(seq, PREFIX), SUFFIX)
             try:
-                # suboptimal solution to padding
-                # consider alternative(s)
-                kmer = [seq[i:(i+size)] for i in range(0, stride, len(seq)) if len(seq[i:(i+size)]) == size and len(seq) == 80]
+                kmer = [seq[i:(i+size)] for i in range(0, stride, len(seq)) if len(seq[i:(i+size)]) == size]
                 kmer = ",".join(kmer)
                 kmers.append(kmer)
             except IndexError:
@@ -71,18 +74,21 @@ def kmerize(filename="./data/train_sequences.txt", stride=1, size=4):
     exprs = np.array(exprs, dtype=np.float16)
     return database, exprs
 
-def tokenize(size):
+def tokenize(size, is_submission=False):
     """
     Calculate frequency for each kmer given sequence.
     :param:
            int size: length of each kmer.
+           boolean is_submission: submission flag.
     :return:
             pd.DataFrame: Pandas object consisting of kmer frequencies indexed by sequences.
             list exprs: expressions of promoter sequences.
+            boolean is_submission: submission flag.
     """
-    database, exprs = kmerize(size=size)
+    if is_submission: database, exprs = kmerize(filename="./data/test_sequences.txt", stride=1, size=size)
+    else: database, exprs = kmerize(size=size)
     vectorizer = CountVectorizer()
     vectorizer.fit(database["kmers"])
     data = vectorizer.transform(database["kmers"])
     vectors = pd.DataFrame(data.toarray(), database["sequence"].values, vectorizer.get_feature_names())
-    return vectors, exprs
+    return vectors, exprs, is_submission
